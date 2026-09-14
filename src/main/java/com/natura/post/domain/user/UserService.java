@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.natura.post.domain.user.dtos.UserCreateDto;
-
+import com.natura.post.domain.user.dtos.UserUpdatedDto;
 import com.natura.post.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +33,29 @@ public class UserService {
     public User getUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + id));
+    }
+
+    public User updatedUserById(UUID id, UserUpdatedDto userUpdatedDto) {
+        User user = getUserById(id);
+
+        if (userUpdatedDto.sellerName() != null) {
+            user.setSellerName(userUpdatedDto.sellerName());
+        }
+
+        if (userUpdatedDto.phoneNumber() != null) {
+            user.setPhoneNumber(userUpdatedDto.phoneNumber());
+        }
+
+        if (userUpdatedDto.email() != null) {
+            user.setEmail(userUpdatedDto.email());
+        }
+
+        return userRepository.save(user);
+    }
+
+    public void deleteUserById(UUID id) {
+        User user = getUserById(id);
+        userRepository.delete(user);
     }
 
 }
