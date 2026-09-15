@@ -34,6 +34,14 @@ public class UserController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @GetMapping("/email/{id}")
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable String email) {
+        User user = userService.findByEmail(email);
+        UserResponseDto response = new UserResponseDto(
+                user.getId(), user.getSellerName(), user.getEmail(), user.getPhoneNumber());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
         User user = userService.getUserById(id);
