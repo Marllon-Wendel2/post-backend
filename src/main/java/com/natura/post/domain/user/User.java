@@ -1,7 +1,11 @@
 package com.natura.post.domain.user;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.natura.post.domain.products.Products;
 
@@ -28,7 +32,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,4 +54,20 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Products> products;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(); // ajuste quando tiver roles
+    }
+
+    @Override
+    public String getPassword() {
+        return hashPassword;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
 }
