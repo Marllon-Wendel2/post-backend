@@ -46,6 +46,17 @@ public class ProductStorageService {
         }
     }
 
+    public String uploadBytes(byte[] data, String fileName, String contentType) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .contentType(contentType)
+                .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(data));
+        return publicUrl + "/" + fileName;
+    }
+
     public void deleteFile(String fileUrl) {
         String fileName = fileUrl.substring(publicUrl.length() + 1);
 
