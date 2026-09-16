@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -20,9 +21,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.natura.post.domain.products.dtos.CreateProductDto;
 import com.natura.post.domain.products.dtos.ProductResponseDto;
+import com.natura.post.domain.products.dtos.SocialImage.SocialImageRequestDto;
+import com.natura.post.domain.products.dtos.SocialImage.SocialImageResponseDto;
 import com.natura.post.domain.products.dtos.UpdateProductDto;
 import com.natura.post.domain.user.User;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 
@@ -32,6 +36,7 @@ import tools.jackson.databind.ObjectMapper;
 public class ProductController {
 
     private final ProductService productService;
+    private final SocialImageService socialImageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductResponseDto> createProduct(
@@ -74,6 +79,13 @@ public class ProductController {
         User user = getCurrentUser();
         productService.deleteProductById(productId, user);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/social-image")
+    public ResponseEntity<SocialImageResponseDto> generateSocialImages(
+            @Valid @RequestBody SocialImageRequestDto request) {
+        SocialImageResponseDto response = socialImageService.generateSocialImages(request.products());
+        return ResponseEntity.ok(response);
     }
 
     private User getCurrentUser() {
