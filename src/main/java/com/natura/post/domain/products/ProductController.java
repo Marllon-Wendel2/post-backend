@@ -26,6 +26,14 @@ import com.natura.post.domain.products.dtos.SocialImage.SocialImageResponseDto;
 import com.natura.post.domain.products.dtos.UpdateProductDto;
 import com.natura.post.domain.user.User;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
@@ -33,14 +41,32 @@ import tools.jackson.databind.ObjectMapper;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
+@Tag(name = "Produtos", description = "Endpoints para gerenciamento de produtos e imagens sociais")
 public class ProductController {
 
     private final ProductService productService;
     private final SocialImageService socialImageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Criar produto",
+            description = "Cria um novo produto com imagem. O produto deve ser enviado como JSON no campo 'product' e a imagem no campo 'image'",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Produto criado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "Não autenticado",
+                    content = @Content)
+    })
     public ResponseEntity<ProductResponseDto> createProduct(
+            @Parameter(description = "Dados do produto em formato JSON", required = true,
+                    schema = @Schema(type = "string", format = "binary"))
             @RequestParam("product") String productJsonString,
+            @Parameter(description = "Imagem do produto (JPEG, PNG)", required = true,
+                    schema = @Schema(type = "string", format = "binary"))
             @RequestPart("image") MultipartFile image) {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -53,21 +79,68 @@ public class ProductController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ProductResponseDto>> getProductByUserId(@PathVariable UUID userId) {
+    @Operation(
+            summary = "Listar produtos por usuário",
+            description = "Retorna todos os produtos de um específico usuário",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de produtos retornada com sucesso",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content)
+    })
+    public ResponseEntity<List<ProductResponseDto>> getProductByUserId(
+            @Parameter(description = "ID do usuário", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID userId) {
         List<ProductResponseDto> products = productService.getProductByUserId(userId);
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID productId) {
+    @Operation(
+            summary = "Buscar produto por ID",
+            description = "Retorna um produto específico pelo seu ID",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Produto encontrado",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+                    content = @Content)
+    })
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @Parameter(description = "ID do produto", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID productId) {
         ProductResponseDto product = productService.getProductById(productId);
         return ResponseEntity.ok(product);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Atualizar produto",
+            description = "Atualiza um produto existente. Pode atualizar dados e/ou imagem",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+                    content = @Content)
+    })
     public ResponseEntity<ProductResponseDto> updateProductById(
+            @Parameter(description = "ID do produto", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
             @PathVariable UUID id,
+            @Parameter(description = "Dados atualizados do produto em formato JSON", required = false,
+                    schema = @Schema(type = "string", format = "binary"))
             @RequestPart(value = "product", required = false) UpdateProductDto productDto,
+            @Parameter(description = "Nova imagem do produto", required = false,
+                    schema = @Schema(type = "string", format = "binary"))
             @RequestPart(value = "image", required = false) MultipartFile image) {
         User user = getCurrentUser();
         ProductResponseDto response = productService.updateProductById(id, productDto, image, user);
@@ -75,13 +148,37 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProductById(@PathVariable UUID productId) {
+    @Operation(
+            summary = "Deletar produto",
+            description = "Remove um produto do sistema",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> deleteProductById(
+            @Parameter(description = "ID do produto", required = true,
+                    example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable UUID productId) {
         User user = getCurrentUser();
         productService.deleteProductById(productId, user);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/social-image")
+    @Operation(
+            summary = "Gerar imagens para redes sociais",
+            description = "Gera imagens otimizadas para postagem em redes sociais a partir de uma lista de produtos",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Imagens geradas com sucesso",
+                    content = @Content(schema = @Schema(implementation = SocialImageResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos",
+                    content = @Content)
+    })
     public ResponseEntity<SocialImageResponseDto> generateSocialImages(
             @Valid @RequestBody SocialImageRequestDto request) {
         SocialImageResponseDto response = socialImageService.generateSocialImages(request.products());
