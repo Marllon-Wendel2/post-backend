@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.natura.post.domain.exception.ResourceNotFoundException;
 import com.natura.post.domain.products.dtos.CreateProductDto;
 import com.natura.post.domain.products.dtos.ProductResponseDto;
+import com.natura.post.domain.products.dtos.ProductSearchDto;
 import com.natura.post.domain.products.dtos.UpdateProductDto;
 import com.natura.post.domain.user.User;
 
@@ -98,6 +99,14 @@ public class ProductService {
         storageService.deleteFile(product.getImageUrl());
 
         productRepository.delete(product);
+    }
+
+    public List<ProductResponseDto> searchProducts(ProductSearchDto productSearchDto, UUID userId) {
+        return productRepository
+                .search(userId, productSearchDto.name(), productSearchDto.minPrice(), productSearchDto.maxPrice())
+                .stream()
+                .map(this::toResponseDto)
+                .toList();
     }
 
     private ProductResponseDto toResponseDto(Products product) {
