@@ -58,7 +58,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Permitir o frontend Angular
         configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200", "http://marllon-desktop:4200",
-                "https://marllon-desktop:4200"));
+                "https://marllon-desktop:4200", "http://localhost:3002/login"));
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         // Headers permitidos
