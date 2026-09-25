@@ -32,7 +32,7 @@ public class AuthService {
         String token = jwtService.generateToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshTokenString(user.getEmail());
 
-        return new AuthResponseDto(token, refreshToken, user.getEmail());
+        return new AuthResponseDto(token, refreshToken, user.getEmail(), user.getId());
     }
 
     public AuthResponseDto refreshToken(RefreshTokenRequestDto request) {
@@ -50,6 +50,6 @@ public class AuthService {
         String newToken = jwtService.generateToken(user.getEmail());
         String newRefreshToken = jwtService.generateRefreshTokenString(user.getEmail());
 
-        return new AuthResponseDto(newToken, newRefreshToken, user.getEmail());
+        return new AuthResponseDto(newToken, newRefreshToken, user.getEmail(), user.getId());
     }
 }
