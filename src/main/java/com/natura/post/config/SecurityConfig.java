@@ -1,5 +1,8 @@
 package com.natura.post.config;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +29,9 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+
+    @Value("${CORS_ALLOWED_ORIGINS}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -57,12 +63,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Permitir o frontend Angular
-        configuration.setAllowedOrigins(java.util.List.of(
-                "http://localhost:4200",
-                "http://marllon-desktop:4200",
-                "https://marllon-desktop:4200",
-                "http://localhost:3002",
-                "https://trippant-samira-shiny.ngrok-free.dev"));
+        configuration.setAllowedOrigins(allowedOrigins);
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         // Headers permitidos
