@@ -139,14 +139,19 @@ public class ProductController {
         }
 
         @PostMapping("/social-image")
-        @Operation(summary = "Gerar imagens para redes sociais", description = "Gera imagens otimizadas para postagem em redes sociais a partir de uma lista de produtos", security = @SecurityRequirement(name = "Bearer Authentication"))
+        @Operation(summary = "Gerar imagens para redes sociais", description = "Gera (ou reaproveita do cache) imagens otimizadas para postagem em redes sociais a partir de uma lista de produtos", security = @SecurityRequirement(name = "Bearer Authentication"))
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Imagens geradas com sucesso", content = @Content(schema = @Schema(implementation = SocialImageResponseDto.class))),
-                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos", content = @Content)
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos", content = @Content),
+                        @ApiResponse(responseCode = "404", description = "Produto não encontrado ou pertencente a outro usuário", content = @Content)
         })
         public ResponseEntity<SocialImageResponseDto> generateSocialImages(
                         @Valid @RequestBody SocialImageRequestDto request) {
-                SocialImageResponseDto response = socialImageService.generateSocialImages(request.products());
+
+                User user = getCurrentUser();
+
+                SocialImageResponseDto response =
+                                socialImageService.generateSocialImages(request.products(), user.getId());
                 return ResponseEntity.ok(response);
         }
 

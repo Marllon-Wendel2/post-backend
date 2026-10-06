@@ -11,17 +11,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.natura.post.domain.exception.ResourceNotFoundException;
 import com.natura.post.domain.products.dtos.SocialImage.SocialImageItemDto;
 import com.natura.post.domain.products.dtos.SocialImage.SocialImageResponseDto;
 import com.natura.post.domain.products.dtos.SocialImage.SocialProductDto;
@@ -35,6 +45,8 @@ public class SocialImageService {
     private static final Logger logger = LoggerFactory.getLogger(SocialImageService.class);
 
     private final ProductStorageService storageService;
+    private final ProductRepository productRepository;
+    private final SocialImageCacheRepository socialImageCacheRepository;
 
     private static final int CANVAS = 1080;
 
@@ -102,19 +114,42 @@ public class SocialImageService {
     private static final Font INTER_BOLD = loadFont("fonts/Inter-Bold.ttf");
     private static final Font INTER_EXTRABOLD = loadFont("fonts/Inter-ExtraBold.ttf");
 
-    public SocialImageResponseDto generateSocialImages(List<SocialProductDto> products) {
+    public SocialImageResponseDto generateSocialImages(List<SocialProductDto> products,
+            UUID requesterId) {
+
+        assertOwnership(products, requesterId);
+
         List<SocialImageItemDto> results = new ArrayList<>();
 
         for (SocialProductDto product : products) {
             try {
-                byte[] imageBytes = generateSingleImage(product);
-                String fileName = "social/" + UUID.randomUUID() + ".png";
-                String r2Url = storageService.uploadBytes(imageBytes, fileName, "image/png");
 
-                results.add(new SocialImageItemDto(product.title(), r2Url, product.price()));
-                logger.info("Imagem gerada com sucesso para: {} -> {}", product.title(), r2Url);
+                String cacheKey = cacheKey(product);
+
+                SocialImageCache cached = socialImageCacheRepository.findByCacheKey(cacheKey).orElse(null);
+
+                if (cached != null && storageService.exists(cached.getR2Key())) {
+                    logger.info("Cache hit para '{}' (key={}) -> {}",
+                            product.title(), cacheKey, cached.getImageUrl());
+                    results.add(new SocialImageItemDto(
+                            product.title(), cached.getImageUrl(), product.price(), true));
+                    continue;
+                }
+
+                logger.info("Cache miss para '{}' (key={}) -> gerando nova imagem",
+                        product.title(), cacheKey);
+                byte[] imageBytes = generateSingleImage(product);
+                String r2Key = "social/" + UUID.randomUUID() + ".png";
+                String uploadedUrl = storageService.uploadBytes(imageBytes, r2Key, "image/png");
+
+                String finalUrl = persistCache(cached, cacheKey, product, r2Key, uploadedUrl);
+
+                results.add(new SocialImageItemDto(
+                        product.title(), finalUrl, product.price(), false));
             } catch (Exception e) {
-                logger.error("Erro ao gerar imagem para o produto '{}': {}", product.title(), e.getMessage());
+
+                logger.error("Erro ao gerar imagem para o produto '{}': {}",
+                        product.title(), e.getMessage());
             }
         }
 
@@ -358,5 +393,91 @@ public class SocialImageService {
                 Integer.parseInt(hex.substring(1, 3), 16),
                 Integer.parseInt(hex.substring(3, 5), 16),
                 Integer.parseInt(hex.substring(5, 7), 16));
+    }
+
+    private String persistCache(SocialImageCache cached,
+            String cacheKey,
+            SocialProductDto product,
+            String r2Key,
+            String uploadedUrl) {
+
+        boolean isNew = cached == null;
+        SocialImageCache entity = isNew
+                ? SocialImageCache.builder().cacheKey(cacheKey).build()
+                : cached;
+
+        entity.setProductId(product.productId());
+        entity.setProductTitle(product.title());
+        entity.setProductPrice(product.price());
+        entity.setProductImageUrl(product.imageUrl());
+        entity.setBrand(product.brand());
+        entity.setR2Key(r2Key);
+        entity.setImageUrl(uploadedUrl);
+
+        try {
+            socialImageCacheRepository.save(entity);
+            return uploadedUrl;
+
+        } catch (DataIntegrityViolationException ex) {
+
+            if (!isNew) {
+                throw ex;
+            }
+
+            logger.warn("Corrida de cache na key={}; reaproveitando a imagem vencedora", cacheKey);
+
+            try {
+                storageService.deleteFile(uploadedUrl);
+            } catch (Exception cleanupEx) {
+                logger.warn("Nao foi possivel apagar o arquivo orfao {}: {}",
+                        uploadedUrl, cleanupEx.getMessage());
+            }
+
+            SocialImageCache winner = socialImageCacheRepository
+                    .findByCacheKey(cacheKey)
+                    .orElseThrow();
+            return winner.getImageUrl();
+        }
+    }
+
+    private void assertOwnership(List<SocialProductDto> products, UUID requesterId) {
+        Set<UUID> ids = products.stream()
+                .map(SocialProductDto::productId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        Map<UUID, UUID> ownerByProduct = productRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(
+                        Products::getId,
+                        p -> p.getUser().getId()));
+
+        for (UUID id : ids) {
+            UUID owner = ownerByProduct.get(id);
+            if (owner == null || !owner.equals(requesterId)) {
+
+                throw new ResourceNotFoundException("Produto não encontrado");
+            }
+        }
+    }
+
+    private static String cacheKey(SocialProductDto product) {
+        String payload = String.join("\u001f",
+                product.productId() == null ? "" : product.productId().toString(),
+                product.title() == null ? "" : product.title(),
+                product.price() == null ? "" : Double.toString(product.price()),
+                product.imageUrl() == null ? "" : product.imageUrl(),
+                product.brand() == null ? "" : product.brand());
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(payload.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+
+            throw new IllegalStateException("SHA-256 indisponível", e);
+        }
     }
 }

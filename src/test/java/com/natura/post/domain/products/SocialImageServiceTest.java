@@ -22,7 +22,7 @@ class SocialImageServiceTest {
     private static final int SURFACE_LIGHT = new Color(0xF2, 0xF2, 0xF2).getRGB();
     private static final int PAGE_BG = new Color(0xEE, 0xEE, 0xEC).getRGB();
 
-    private final SocialImageService service = new SocialImageService(null);
+    private final SocialImageService service = new SocialImageService(null, null, null);
 
     @Test
     void devePreservarAProporcaoDaFotoDoProduto() throws Exception {
@@ -70,7 +70,7 @@ class SocialImageServiceTest {
     }
 
     private static SocialProductDto product() {
-        return new SocialProductDto("Creme Hidratante Corporal", 189.90, "http://localhost/produto.png", null);
+        return new SocialProductDto("Creme Hidratante Corporal", 189.90, "http://localhost/produto.png", null, null);
     }
 
     private static BufferedImage tallProduct() {
