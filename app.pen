@@ -12,7 +12,249 @@
       "height": 600,
       "fill": "#FFFFFF",
       "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "J8gxC",
+      "x": 880,
+      "y": 0,
+      "name": "ProductCard",
+      "reusable": true,
+      "width": 800,
+      "fill": "$surface-dark",
+      "cornerRadius": "$radius-card",
+      "effect": {
+        "type": "shadow",
+        "shadowType": "outer",
+        "color": "#0000002E",
+        "offset": {
+          "x": 0,
+          "y": 24
+        },
+        "blur": 60
+      },
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 16,
+      "children": [
+        {
+          "type": "frame",
+          "id": "PToCl",
+          "name": "Product Image",
+          "clip": true,
+          "width": "fill_container",
+          "height": 600,
+          "fill": "$surface-light",
+          "cornerRadius": "$radius-image",
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "GHJBW",
+              "x": 44,
+              "y": 40,
+              "name": "Product Photo",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "generated.webp",
+                "mode": "contain"
+              },
+              "width": 680,
+              "height": 520
+            },
+            {
+              "type": "frame",
+              "id": "JYAsl",
+              "x": 660,
+              "y": 24,
+              "name": "Favorite Button",
+              "width": 84,
+              "height": 84,
+              "fill": "$surface-dark",
+              "cornerRadius": 999,
+              "stroke": "#FFFFFFCC",
+              "strokeWidth": 5,
+              "strokeAlignment": "inner",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "CuknJ",
+                  "x": 24,
+                  "y": 24,
+                  "name": "Heart",
+                  "width": 36,
+                  "height": 36,
+                  "icon": "heart",
+                  "library": "lucide",
+                  "fill": "#FFFFFF"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "f3CK5h",
+          "name": "Product Info",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            24,
+            34,
+            36,
+            34
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "ZhI07",
+              "name": "Product Title",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Creme Hidratante Corporal",
+              "lineHeight": 1.15,
+              "fontFamily": "$font-sans",
+              "fontSize": 44,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "U3X16",
+              "name": "Brand",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Natura Ekos",
+              "fontFamily": "$font-sans",
+              "fontSize": 30
+            },
+            {
+              "type": "frame",
+              "id": "dS4sL",
+              "name": "Footer",
+              "width": "fill_container",
+              "padding": [
+                24,
+                0,
+                0,
+                0
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hhqsi",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "R$ 189,90",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 64,
+                  "fontWeight": "800",
+                  "letterSpacing": -1.5
+                },
+                {
+                  "type": "frame",
+                  "id": "HBK47",
+                  "name": "Cart Button",
+                  "width": 130,
+                  "height": 130,
+                  "fill": "$white",
+                  "cornerRadius": "$radius-button",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "LO3eS",
+                      "x": 33,
+                      "y": 33,
+                      "name": "Bag",
+                      "width": 64,
+                      "height": 64,
+                      "icon": "shopping-bag",
+                      "library": "lucide",
+                      "fill": "$surface-dark"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "oa5QV",
+      "x": 1780,
+      "y": 0,
+      "name": "Social Post - Feed 1080x1080",
+      "clip": true,
+      "width": 1080,
+      "height": 1080,
+      "fill": "$bg-page",
+      "layout": "none",
+      "children": [
+        {
+          "id": "TIetd",
+          "type": "ref",
+          "ref": "J8gxC",
+          "name": "ProductCard",
+          "x": 140,
+          "y": 57
+        }
+      ]
     }
   ],
+  "variables": {
+    "bg-page": {
+      "type": "color",
+      "value": "#EEEEEC"
+    },
+    "surface-dark": {
+      "type": "color",
+      "value": "#292929"
+    },
+    "surface-light": {
+      "type": "color",
+      "value": "#F2F2F2"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "text-muted": {
+      "type": "color",
+      "value": "#B6B6B6"
+    },
+    "text-dark": {
+      "type": "color",
+      "value": "#262626"
+    },
+    "white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "radius-card": {
+      "type": "number",
+      "value": 64
+    },
+    "radius-image": {
+      "type": "number",
+      "value": 52
+    },
+    "radius-button": {
+      "type": "number",
+      "value": 44
+    },
+    "font-sans": {
+      "type": "string",
+      "value": "Inter"
+    }
+  },
   "fileToken": "546c9bbb-f4d5-484a-987e-937db7778e34"
 }

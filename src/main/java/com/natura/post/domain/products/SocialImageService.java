@@ -19,7 +19,6 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -117,6 +116,7 @@ public class SocialImageService {
     public SocialImageResponseDto generateSocialImages(List<SocialProductDto> products,
             UUID requesterId) {
 
+        assertProductIdsPresent(products);
         assertOwnership(products, requesterId);
 
         List<SocialImageItemDto> results = new ArrayList<>();
@@ -440,15 +440,18 @@ public class SocialImageService {
         }
     }
 
+    private void assertProductIdsPresent(List<SocialProductDto> products) {
+        for (SocialProductDto product : products) {
+            if (product.productId() == null) {
+                throw new IllegalArgumentException("O productId e obrigatorio");
+            }
+        }
+    }
+
     private void assertOwnership(List<SocialProductDto> products, UUID requesterId) {
         Set<UUID> ids = products.stream()
                 .map(SocialProductDto::productId)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-
-        if (ids.isEmpty()) {
-            return;
-        }
 
         Map<UUID, UUID> ownerByProduct = productRepository.findAllById(ids).stream()
                 .collect(Collectors.toMap(
@@ -465,8 +468,8 @@ public class SocialImageService {
     }
 
     private static String cacheKey(SocialProductDto product) {
-        String payload = String.join("\u001f",
-                product.productId() == null ? "" : product.productId().toString(),
+        String payload = String.join("\\u001f",
+                product.productId().toString(),
                 product.title() == null ? "" : product.title(),
                 product.price() == null ? "" : Double.toString(product.price()),
                 product.imageUrl() == null ? "" : product.imageUrl(),

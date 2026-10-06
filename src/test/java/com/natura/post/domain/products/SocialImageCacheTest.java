@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -42,15 +43,22 @@ class SocialImageCacheTest {
     private SocialImageService service;
 
     private UUID requester;
+    private UUID productId;
 
     @BeforeEach
     void setUp() {
         requester = UUID.randomUUID();
+        productId = UUID.randomUUID();
+        lenient().when(productRepository.findAllById(any())).thenReturn(List.of(
+                Products.builder()
+                        .id(productId)
+                        .user(User.builder().id(requester).build())
+                        .build()));
     }
 
     private SocialProductDto product(double price) {
 
-        return new SocialProductDto("Creme Hidratante", price, null, null, null);
+        return new SocialProductDto("Creme Hidratante", price, null, null, productId);
     }
 
     @Test
@@ -148,7 +156,7 @@ class SocialImageCacheTest {
     }
 
     @Test
-    void semProductIdNaoQuebraEEAindaUsaOCache() {
+    void comProductIdValidoUsaOCache() {
         when(socialImageCacheRepository.findByCacheKey(anyString()))
                 .thenReturn(Optional.empty());
 
@@ -156,5 +164,16 @@ class SocialImageCacheTest {
         service.generateSocialImages(List.of(product(89.90)), requester);
 
         verify(storageService, times(2)).uploadBytes(any(), anyString(), anyString());
+    }
+
+    @Test
+    void semProductIdLancaExcecao() {
+        SocialProductDto semId = new SocialProductDto(
+                "Creme Hidratante", 89.90, null, null, null);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.generateSocialImages(List.of(semId), requester));
+
+        verify(storageService, never()).uploadBytes(any(), anyString(), anyString());
     }
 }

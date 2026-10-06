@@ -3,6 +3,7 @@ package com.natura.post.domain.products.dtos.SocialImage;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Dados de um produto para geração de imagem social")
 public record SocialProductDto(
@@ -14,5 +15,6 @@ public record SocialProductDto(
 
                 @Schema(description = "Marca exibida abaixo do título (opcional)", example = "Natura Ekos") String brand,
 
-                @Schema(description = "Id do produto no banco (opcional)", example = "550e8400-e29b-41d4-a716-446655440000") UUID productId) {
+                @NotNull(message = "O productId e obrigatorio")
+                @Schema(description = "Id do produto no banco", example = "550e8400-e29b-41d4-a716-446655440000", requiredMode = Schema.RequiredMode.REQUIRED) UUID productId) {
 }
