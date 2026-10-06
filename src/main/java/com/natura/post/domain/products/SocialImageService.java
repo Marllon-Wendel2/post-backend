@@ -1,12 +1,19 @@
 package com.natura.post.domain.products;
 
 import java.awt.*;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
@@ -29,14 +36,71 @@ public class SocialImageService {
 
     private final ProductStorageService storageService;
 
-    private static final int IMAGE_WIDTH = 1080;
-    private static final int IMAGE_HEIGHT = 1080;
+    private static final int CANVAS = 1080;
 
-    // Paleta Clássica / Editorial
-    private static final Color BACKGROUND_COLOR = new Color(253, 251, 247); // Creme / Papel Antigo
-    private static final Color BORDER_COLOR = new Color(212, 197, 169); // Tom dourado/bronze sutil
-    private static final Color TEXT_PRIMARY = new Color(44, 42, 41); // Marrom escuro clássico (quase preto)
-    private static final Color TEXT_ACCENT = new Color(139, 69, 19); // Tom Madeira / Cobre clássico
+    private static final Color PAGE_BG = color("#EEEEEC");
+    private static final Color CARD_BG = color("#292929");
+    private static final Color SURFACE_LIGHT = color("#F2F2F2");
+    private static final Color TEXT_LIGHT = color("#F5F5F5");
+    private static final Color TEXT_MUTED = color("#B6B6B6");
+    private static final Color WHITE = Color.WHITE;
+
+    private static final String DEFAULT_BRAND = "Natura";
+
+    private static final int CARD_X = 140;
+    private static final int CARD_Y = 57;
+    private static final int CARD_W = 800;
+    private static final int CARD_H = 965;
+    private static final int CARD_R = 64;
+    private static final int CARD_PADDING = 16;
+
+    private static final int IMAGE_X = CARD_X + CARD_PADDING;
+    private static final int IMAGE_Y = CARD_Y + CARD_PADDING;
+    private static final int IMAGE_W = CARD_W - 2 * CARD_PADDING;
+    private static final int IMAGE_H = 600;
+    private static final int IMAGE_R = 52;
+
+    private static final int PHOTO_PADDING_X = 44;
+    private static final int PHOTO_PADDING_Y = 40;
+    static final int PHOTO_X = IMAGE_X + PHOTO_PADDING_X;
+    static final int PHOTO_Y = IMAGE_Y + PHOTO_PADDING_Y;
+    static final int PHOTO_W = IMAGE_W - 2 * PHOTO_PADDING_X;
+    static final int PHOTO_H = IMAGE_H - 2 * PHOTO_PADDING_Y;
+
+    private static final int FAVORITE_SIZE = 84;
+    private static final int FAVORITE_X = IMAGE_X + IMAGE_W - 24 - FAVORITE_SIZE;
+    private static final int FAVORITE_Y = IMAGE_Y + 24;
+
+    private static final int CONTENT_X = IMAGE_X;
+    private static final int CONTENT_W = IMAGE_W;
+    private static final int CONTENT_Y = IMAGE_Y + IMAGE_H + 16;
+    private static final int CONTENT_BOTTOM = CARD_Y + CARD_H - CARD_PADDING;
+    private static final int CONTENT_PADDING_X = 34;
+    private static final int CONTENT_PADDING_TOP = 24;
+    private static final int CONTENT_PADDING_BOTTOM = 36;
+    private static final int CONTENT_GAP = 8;
+
+    private static final int TITLE_SIZE = 44;
+    private static final int TITLE_BLOCK_H = 51;
+    private static final int BRAND_SIZE = 30;
+    private static final int BRAND_BLOCK_H = 36;
+
+    private static final int CART_SIZE = 130;
+    private static final int CART_RADIUS = 44;
+    private static final int CART_X = CONTENT_X + CONTENT_W - CONTENT_PADDING_X - CART_SIZE;
+    private static final int CART_Y = CONTENT_BOTTOM - CONTENT_PADDING_BOTTOM - CART_SIZE;
+
+    private static final int PRICE_SIZE = 64;
+    private static final int PRICE_BLOCK_H = 77;
+
+    private static final int TEXT_X = CONTENT_X + CONTENT_PADDING_X;
+    private static final int TEXT_MAX_W = CONTENT_W - 2 * CONTENT_PADDING_X;
+    private static final int TITLE_Y = CONTENT_Y + CONTENT_PADDING_TOP;
+    private static final int BRAND_Y = TITLE_Y + TITLE_BLOCK_H + CONTENT_GAP;
+
+    private static final Font INTER_REGULAR = loadFont("fonts/Inter-Regular.ttf");
+    private static final Font INTER_BOLD = loadFont("fonts/Inter-Bold.ttf");
+    private static final Font INTER_EXTRABOLD = loadFont("fonts/Inter-ExtraBold.ttf");
 
     public SocialImageResponseDto generateSocialImages(List<SocialProductDto> products) {
         List<SocialImageItemDto> results = new ArrayList<>();
@@ -48,7 +112,7 @@ public class SocialImageService {
                 String r2Url = storageService.uploadBytes(imageBytes, fileName, "image/png");
 
                 results.add(new SocialImageItemDto(product.title(), r2Url, product.price()));
-                logger.info("Imagem clássica gerada com sucesso para: {} -> {}", product.title(), r2Url);
+                logger.info("Imagem gerada com sucesso para: {} -> {}", product.title(), r2Url);
             } catch (Exception e) {
                 logger.error("Erro ao gerar imagem para o produto '{}': {}", product.title(), e.getMessage());
             }
@@ -57,87 +121,242 @@ public class SocialImageService {
         return new SocialImageResponseDto(results);
     }
 
-    private byte[] generateSingleImage(SocialProductDto product) throws IOException {
-        BufferedImage canvas = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = canvas.createGraphics();
+    byte[] generateSingleImage(SocialProductDto product) throws IOException {
+        return render(product, download(product.imageUrl()));
+    }
 
-        // Alta qualidade de renderização para curvas suaves nas letras
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+    byte[] render(SocialProductDto product, BufferedImage photo) throws IOException {
+        BufferedImage canvas = new BufferedImage(CANVAS, CANVAS, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = canvas.createGraphics();
 
-        // 1. Fundo tom Creme Clássico
-        g2d.setColor(BACKGROUND_COLOR);
-        g2d.fillRect(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        // 2. Moldura Externa Dupla (Estilo Editorial / Clássico)
-        g2d.setColor(BORDER_COLOR);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawRect(50, 50, IMAGE_WIDTH - 100, IMAGE_HEIGHT - 100);
-        g2d.drawRect(60, 60, IMAGE_WIDTH - 120, IMAGE_HEIGHT - 120);
+        g.setColor(PAGE_BG);
+        g.fillRect(0, 0, CANVAS, CANVAS);
 
-        // 3. Renderiza a Imagem do Produto centralizada
-        if (product.imageUrl() != null && !product.imageUrl().isEmpty()) {
-            try {
-                BufferedImage productImage = ImageIO.read(new URL(product.imageUrl()));
-                if (productImage != null) {
-                    int imgSize = 580;
-                    int imgX = (IMAGE_WIDTH - imgSize) / 2;
-                    int imgY = 140;
+        drawShadow(g);
 
-                    // Fundo branco interno para destacar a foto do produto
-                    g2d.setColor(Color.WHITE);
-                    g2d.fillRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
-                    g2d.setColor(new Color(230, 220, 205));
-                    g2d.drawRect(imgX - 20, imgY - 20, imgSize + 40, imgSize + 40);
+        g.setColor(CARD_BG);
+        g.fill(new RoundRectangle2D.Double(CARD_X, CARD_Y, CARD_W, CARD_H, CARD_R, CARD_R));
 
-                    g2d.drawImage(productImage, imgX, imgY, imgSize, imgSize, null);
-                }
-            } catch (Exception e) {
-                logger.warn("Nao foi possivel carregar a imagem do produto: {}", product.imageUrl());
-            }
+        g.setColor(SURFACE_LIGHT);
+        g.fill(new RoundRectangle2D.Double(IMAGE_X, IMAGE_Y, IMAGE_W, IMAGE_H, IMAGE_R, IMAGE_R));
+
+        if (photo != null) {
+            drawContained(g, photo, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
         }
 
-        // 4. Tipografia Clássica (Usando Serif / Georgia para o toque tradicional)
-        // Nome da Marca ou Categoria sutil no topo inferior
-        g2d.setColor(TEXT_ACCENT);
-        g2d.setFont(new Font("Georgia", Font.ITALIC, 24));
-        g2d.drawString("— Promoção Exclusiva —",
-                (IMAGE_WIDTH - g2d.getFontMetrics().stringWidth("— Coleção Exclusiva —")) / 2, 810);
+        drawFavoriteButton(g);
+        drawTitle(g, product.title());
+        drawBrand(g, product.brand());
+        drawPrice(g, product.price());
+        drawCartButton(g);
 
-        // 5. Título do Produto (Estilo Clássico / Serifado)
-        g2d.setColor(TEXT_PRIMARY);
-        g2d.setFont(new Font("Georgia", Font.BOLD, 40));
-
-        String title = product.title() != null ? product.title() : "Essência Natura";
-        FontMetrics titleMetrics = g2d.getFontMetrics();
-        int maxWidth = IMAGE_WIDTH - 200;
-        String truncatedTitle = truncateText(title, titleMetrics, maxWidth);
-
-        int titleX = (IMAGE_WIDTH - titleMetrics.stringWidth(truncatedTitle)) / 2;
-        g2d.drawString(truncatedTitle, titleX, 880);
-
-        // 6. Preço em destaque clássico
-        g2d.setColor(TEXT_ACCENT);
-        g2d.setFont(new Font("TimesNewRoman", Font.BOLD, 48));
-        String priceText = product.price() != null ? String.format("R$ %.2f", product.price()) : "";
-        int priceX = (IMAGE_WIDTH - g2d.getFontMetrics().stringWidth(priceText)) / 2;
-        g2d.drawString(priceText, priceX, 955);
-
-        g2d.dispose();
+        g.dispose();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(canvas, "png", baos);
         return baos.toByteArray();
     }
 
-    private String truncateText(String text, FontMetrics fm, int maxWidth) {
-        if (fm.stringWidth(text) <= maxWidth) {
+    private static void drawContained(Graphics2D g, BufferedImage image, int boxX, int boxY, int boxW, int boxH) {
+        double scale = Math.min((double) boxW / image.getWidth(), (double) boxH / image.getHeight());
+        int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
+        int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
+        int x = boxX + (boxW - width) / 2;
+        int y = boxY + (boxH - height) / 2;
+
+        g.drawImage(image, x, y, width, height, null);
+    }
+
+    private static void drawShadow(Graphics2D g) {
+        Composite original = g.getComposite();
+        for (int i = 14; i >= 1; i--) {
+            float alpha = 0.010f + 0.014f * (14 - i) / 14f;
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+            int grow = i * 2;
+            g.fill(new RoundRectangle2D.Double(CARD_X - grow, CARD_Y - grow + i,
+                    CARD_W + 2 * grow, CARD_H + 2 * grow, CARD_R + grow, CARD_R + grow));
+        }
+        g.setComposite(original);
+    }
+
+    private static void drawFavoriteButton(Graphics2D g) {
+        g.setColor(CARD_BG);
+        g.fill(new RoundRectangle2D.Double(FAVORITE_X, FAVORITE_Y, FAVORITE_SIZE, FAVORITE_SIZE,
+                FAVORITE_SIZE, FAVORITE_SIZE));
+
+        g.setColor(new Color(255, 255, 255, 204));
+        g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.draw(new RoundRectangle2D.Double(FAVORITE_X + 2.5, FAVORITE_Y + 2.5,
+                FAVORITE_SIZE - 5, FAVORITE_SIZE - 5, FAVORITE_SIZE, FAVORITE_SIZE));
+
+        int iconSize = 36;
+        int iconX = FAVORITE_X + (FAVORITE_SIZE - iconSize) / 2;
+        int iconY = FAVORITE_Y + (FAVORITE_SIZE - iconSize) / 2;
+        drawHeart(g, iconX, iconY, iconSize, WHITE, 3f);
+    }
+
+    private static void drawHeart(Graphics2D g, int x, int y, int size, Color color, float stroke) {
+        Path2D.Float path = new Path2D.Float();
+        path.moveTo(px(x, size, 0.50), py(y, size, 0.92));
+        path.curveTo(px(x, size, 0.22), py(y, size, 0.72),
+                px(x, size, 0.04), py(y, size, 0.53),
+                px(x, size, 0.04), py(y, size, 0.33));
+        path.curveTo(px(x, size, 0.04), py(y, size, 0.16),
+                px(x, size, 0.17), py(y, size, 0.06),
+                px(x, size, 0.30), py(y, size, 0.06));
+        path.curveTo(px(x, size, 0.40), py(y, size, 0.06),
+                px(x, size, 0.47), py(y, size, 0.12),
+                px(x, size, 0.50), py(y, size, 0.20));
+        path.curveTo(px(x, size, 0.53), py(y, size, 0.12),
+                px(x, size, 0.60), py(y, size, 0.06),
+                px(x, size, 0.70), py(y, size, 0.06));
+        path.curveTo(px(x, size, 0.83), py(y, size, 0.06),
+                px(x, size, 0.96), py(y, size, 0.16),
+                px(x, size, 0.96), py(y, size, 0.33));
+        path.curveTo(px(x, size, 0.96), py(y, size, 0.53),
+                px(x, size, 0.78), py(y, size, 0.72),
+                px(x, size, 0.50), py(y, size, 0.92));
+        path.closePath();
+
+        Stroke original = g.getStroke();
+        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.setColor(color);
+        g.draw(path);
+        g.setStroke(original);
+    }
+
+    private static void drawCartButton(Graphics2D g) {
+        g.setColor(WHITE);
+        g.fill(new RoundRectangle2D.Double(CART_X, CART_Y, CART_SIZE, CART_SIZE, CART_RADIUS, CART_RADIUS));
+
+        int iconSize = 64;
+        int iconX = CART_X + (CART_SIZE - iconSize) / 2;
+        int iconY = CART_Y + (CART_SIZE - iconSize) / 2;
+        drawBag(g, iconX, iconY, iconSize, CARD_BG, 4.5f);
+    }
+
+    private static void drawBag(Graphics2D g, int x, int y, int size, Color color, float stroke) {
+        Stroke original = g.getStroke();
+        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.setColor(color);
+
+        g.fill(new RoundRectangle2D.Double(px(x, size, 0.12), py(y, size, 0.40),
+                size * 0.76, size * 0.52, size * 0.14, size * 0.14));
+
+        g.draw(new Arc2D.Double(px(x, size, 0.33), py(y, size, 0.23),
+                size * 0.34, size * 0.34, 0, -180, Arc2D.OPEN));
+
+        g.setStroke(original);
+    }
+
+    private void drawTitle(Graphics2D g, String rawTitle) {
+        String title = rawTitle == null || rawTitle.isBlank() ? "Produto Natura" : rawTitle.trim();
+        Font font = font(INTER_BOLD, Font.BOLD, TITLE_SIZE);
+        g.setFont(font);
+        FontMetrics metrics = g.getFontMetrics();
+
+        g.setColor(TEXT_LIGHT);
+        g.drawString(truncateText(title, metrics, TEXT_MAX_W), TEXT_X, baseline(metrics, TITLE_Y, TITLE_BLOCK_H));
+    }
+
+    private void drawBrand(Graphics2D g, String rawBrand) {
+        String brand = rawBrand == null || rawBrand.isBlank() ? DEFAULT_BRAND : rawBrand.trim();
+        Font font = font(INTER_REGULAR, Font.PLAIN, BRAND_SIZE);
+        g.setFont(font);
+        FontMetrics metrics = g.getFontMetrics();
+
+        g.setColor(TEXT_MUTED);
+        g.drawString(truncateText(brand, metrics, TEXT_MAX_W), TEXT_X, baseline(metrics, BRAND_Y, BRAND_BLOCK_H));
+    }
+
+    private void drawPrice(Graphics2D g, Double price) {
+        if (price == null) {
+            return;
+        }
+
+        Font font = font(INTER_EXTRABOLD, Font.BOLD, PRICE_SIZE);
+        g.setFont(font);
+        FontMetrics metrics = g.getFontMetrics();
+
+        String text = String.format(Locale.of("pt", "BR"), "R$ %.2f", price);
+        int blockY = CART_Y + CART_SIZE - PRICE_BLOCK_H;
+
+        g.setColor(TEXT_LIGHT);
+        g.drawString(text, TEXT_X, baseline(metrics, blockY, PRICE_BLOCK_H));
+    }
+
+    private static int baseline(FontMetrics metrics, int blockTop, int blockHeight) {
+        int textHeight = metrics.getAscent() + metrics.getDescent();
+        return blockTop + (blockHeight - textHeight) / 2 + metrics.getAscent();
+    }
+
+    private static float px(int x, int size, double ratio) {
+        return (float) (x + size * ratio);
+    }
+
+    private static float py(int y, int size, double ratio) {
+        return (float) (y + size * ratio);
+    }
+
+    private String truncateText(String text, FontMetrics metrics, int maxWidth) {
+        if (metrics.stringWidth(text) <= maxWidth) {
             return text;
         }
-        while (fm.stringWidth(text + "...") > maxWidth && text.length() > 0) {
+        while (metrics.stringWidth(text + "...") > maxWidth && text.length() > 0) {
             text = text.substring(0, text.length() - 1);
         }
         return text + "...";
+    }
+
+    private BufferedImage download(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        try {
+            URLConnection connection = new URL(imageUrl).openConnection();
+            connection.setConnectTimeout(10_000);
+            connection.setReadTimeout(15_000);
+
+            try (InputStream in = connection.getInputStream()) {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                in.transferTo(buffer);
+                return ImageIO.read(new ByteArrayInputStream(buffer.toByteArray()));
+            }
+        } catch (Exception e) {
+            logger.warn("Nao foi possivel carregar a imagem do produto: {}", imageUrl);
+            return null;
+        }
+    }
+
+    private static Font font(Font embedded, int fallbackStyle, float size) {
+        if (embedded != null) {
+            return embedded.deriveFont(size);
+        }
+        return new Font(Font.SANS_SERIF, fallbackStyle, Math.round(size));
+    }
+
+    private static Font loadFont(String path) {
+        try (InputStream in = SocialImageService.class.getResourceAsStream("/" + path)) {
+            if (in != null) {
+                return Font.createFont(Font.TRUETYPE_FONT, in);
+            }
+            logger.warn("Fonte nao encontrada no classpath: {}", path);
+        } catch (Exception e) {
+            logger.warn("Falha ao carregar a fonte {}: {}", path, e.getMessage());
+        }
+        return null;
+    }
+
+    private static Color color(String hex) {
+        return new Color(
+                Integer.parseInt(hex.substring(1, 3), 16),
+                Integer.parseInt(hex.substring(3, 5), 16),
+                Integer.parseInt(hex.substring(5, 7), 16));
     }
 }
