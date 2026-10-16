@@ -1,8 +1,7 @@
 package com.natura.post.domain.products;
 
 import java.awt.*;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Path2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -47,71 +46,79 @@ public class SocialImageService {
     private final ProductRepository productRepository;
     private final SocialImageCacheRepository socialImageCacheRepository;
 
-    private static final int CANVAS = 1080;
+    private static final String TEMPLATE_VERSION = "story-calm-v1";
 
-    private static final Color PAGE_BG = color("#EEEEEC");
-    private static final Color CARD_BG = color("#292929");
-    private static final Color SURFACE_LIGHT = color("#F2F2F2");
-    private static final Color TEXT_LIGHT = color("#F5F5F5");
-    private static final Color TEXT_MUTED = color("#B6B6B6");
+    static final int CANVAS_W = 1080;
+    static final int CANVAS_H = 1920;
+
+    private static final Color PAGE_BG = color("#F1EEE7");
+    private static final Color SURFACE = color("#FAF8F3");
+    private static final Color FOREST = color("#0F5132");
+    private static final Color MINT = color("#B7D9C1");
+    private static final Color TEXT_PRIMARY = color("#242B27");
+    private static final Color SHADOW = color("#333027");
     private static final Color WHITE = Color.WHITE;
 
-    private static final String DEFAULT_BRAND = "Natura";
+    private static final String DEFAULT_BRAND = "";
+    private static final String DEFAULT_TITLE = "Produto Natura";
 
-    private static final int CARD_X = 140;
-    private static final int CARD_Y = 57;
-    private static final int CARD_W = 800;
-    private static final int CARD_H = 965;
-    private static final int CARD_R = 64;
-    private static final int CARD_PADDING = 16;
+    static final int CONTENT_X = 80;
+    static final int CONTENT_W = CANVAS_W - 2 * CONTENT_X;
 
-    private static final int IMAGE_X = CARD_X + CARD_PADDING;
-    private static final int IMAGE_Y = CARD_Y + CARD_PADDING;
-    private static final int IMAGE_W = CARD_W - 2 * CARD_PADDING;
-    private static final int IMAGE_H = 600;
-    private static final int IMAGE_R = 52;
+    static final int HEADER_TOP = 240;
+    static final int HEADER_GAP = 24;
+    static final int RULE_W = 96;
+    static final int RULE_H = 4;
 
-    private static final int PHOTO_PADDING_X = 44;
-    private static final int PHOTO_PADDING_Y = 40;
-    static final int PHOTO_X = IMAGE_X + PHOTO_PADDING_X;
-    static final int PHOTO_Y = IMAGE_Y + PHOTO_PADDING_Y;
-    static final int PHOTO_W = IMAGE_W - 2 * PHOTO_PADDING_X;
-    static final int PHOTO_H = IMAGE_H - 2 * PHOTO_PADDING_Y;
+    static final int OVERLINE_SIZE = 28;
+    static final int OVERLINE_TRACK = 7;
 
-    private static final int FAVORITE_SIZE = 84;
-    private static final int FAVORITE_X = IMAGE_X + IMAGE_W - 24 - FAVORITE_SIZE;
-    private static final int FAVORITE_Y = IMAGE_Y + 24;
+    static final int TITLE_SIZE = 124;
+    static final int TITLE_SIZE_MIN = 84;
+    static final int TITLE_MAX_LINES = 3;
+    static final double TITLE_LINE_RATIO = 1.08;
 
-    private static final int CONTENT_X = IMAGE_X;
-    private static final int CONTENT_W = IMAGE_W;
-    private static final int CONTENT_Y = IMAGE_Y + IMAGE_H + 16;
-    private static final int CONTENT_BOTTOM = CARD_Y + CARD_H - CARD_PADDING;
-    private static final int CONTENT_PADDING_X = 34;
-    private static final int CONTENT_PADDING_TOP = 24;
-    private static final int CONTENT_PADDING_BOTTOM = 36;
-    private static final int CONTENT_GAP = 8;
+    static final int CARD_MAX_H = 820;
+    static final int CARD_MIN_H = 560;
+    static final int CARD_R = 24;
+    static final int PHOTO_PAD_X = 60;
+    static final int PHOTO_PAD_Y = 55;
 
-    private static final int TITLE_SIZE = 44;
-    private static final int TITLE_BLOCK_H = 51;
-    private static final int BRAND_SIZE = 30;
-    private static final int BRAND_BLOCK_H = 36;
+    static final int PILL_W = 640;
+    static final int PILL_H = 170;
+    static final int PILL_X = CONTENT_X + (CONTENT_W - PILL_W) / 2;
+    static final int PRICE_TOP = 1520;
+    static final int PRICE_SIZE = 76;
+    static final int PRICE_TRACK = -1;
 
-    private static final int CART_SIZE = 130;
-    private static final int CART_RADIUS = 44;
-    private static final int CART_X = CONTENT_X + CONTENT_W - CONTENT_PADDING_X - CART_SIZE;
-    private static final int CART_Y = CONTENT_BOTTOM - CONTENT_PADDING_BOTTOM - CART_SIZE;
+    static final int DECOR_CX = 1050;
+    static final int DECOR_CY = 30;
+    static final int DECOR_R = 190;
 
-    private static final int PRICE_SIZE = 64;
-    private static final int PRICE_BLOCK_H = 77;
-
-    private static final int TEXT_X = CONTENT_X + CONTENT_PADDING_X;
-    private static final int TEXT_MAX_W = CONTENT_W - 2 * CONTENT_PADDING_X;
-    private static final int TITLE_Y = CONTENT_Y + CONTENT_PADDING_TOP;
-    private static final int BRAND_Y = TITLE_Y + TITLE_BLOCK_H + CONTENT_GAP;
+    private static final int CONTENT_BOTTOM = 1690;
 
     private static final Font INTER_REGULAR = loadFont("fonts/Inter-Regular.ttf");
-    private static final Font INTER_BOLD = loadFont("fonts/Inter-Bold.ttf");
     private static final Font INTER_EXTRABOLD = loadFont("fonts/Inter-ExtraBold.ttf");
+    private static final Font DISPLAY_REGULAR = loadFont("fonts/CormorantGaramond.ttf");
+
+    record Layout(
+            int cardX,
+            int cardY,
+            int cardW,
+            int cardH,
+            int photoX,
+            int photoY,
+            int photoW,
+            int photoH,
+            int pillX,
+            int pillY,
+            int pillW,
+            int pillH,
+            int titleSize,
+            int titleLineH,
+            int overlineH,
+            List<String> titleLines) {
+    }
 
     public SocialImageResponseDto generateSocialImages(List<SocialProductDto> products,
             UUID requesterId) {
@@ -160,42 +167,179 @@ public class SocialImageService {
         return render(product, download(product.imageUrl()));
     }
 
+    Layout computeLayout(SocialProductDto product) {
+        BufferedImage scratch = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = scratch.createGraphics();
+        try {
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            String title = title(product);
+
+            g.setFont(font(INTER_REGULAR, Font.PLAIN, OVERLINE_SIZE));
+            FontMetrics overlineMetrics = g.getFontMetrics();
+            int overlineH = overlineMetrics.getAscent() + overlineMetrics.getDescent();
+
+            int titleSize = TITLE_SIZE;
+            List<String> lines;
+            FontMetrics titleMetrics;
+            while (true) {
+                g.setFont(font(DISPLAY_REGULAR, Font.PLAIN, titleSize));
+                titleMetrics = g.getFontMetrics();
+                lines = wrap(title, titleMetrics, CONTENT_W);
+                if (lines.size() <= 2 || titleSize <= TITLE_SIZE_MIN) {
+                    break;
+                }
+                titleSize -= 8;
+            }
+            lines = limitLines(lines, titleMetrics, CONTENT_W, TITLE_MAX_LINES);
+
+            int titleLineH = (int) Math.ceil(titleSize * TITLE_LINE_RATIO);
+            int headerH = RULE_H + HEADER_GAP + overlineH + HEADER_GAP + titleLineH * lines.size();
+
+            boolean hasPrice = product.price() != null;
+            int pillY = hasPrice ? PRICE_TOP : CONTENT_BOTTOM;
+            int space = pillY - (HEADER_TOP + headerH);
+
+            int gap = 56;
+            int cardH = space - 2 * gap;
+            if (cardH > CARD_MAX_H) {
+                cardH = CARD_MAX_H;
+                gap = (space - cardH) / 2;
+            } else if (cardH < CARD_MIN_H) {
+                cardH = CARD_MIN_H;
+                gap = Math.max(16, (space - cardH) / 2);
+            }
+            int cardY = HEADER_TOP + headerH + gap;
+
+            int cardX = CONTENT_X;
+            int cardW = CONTENT_W;
+            int photoX = cardX + PHOTO_PAD_X;
+            int photoY = cardY + PHOTO_PAD_Y;
+            int photoW = cardW - 2 * PHOTO_PAD_X;
+            int photoH = cardH - 2 * PHOTO_PAD_Y;
+
+            return new Layout(cardX, cardY, cardW, cardH,
+                    photoX, photoY, photoW, photoH,
+                    PILL_X, pillY, PILL_W, hasPrice ? PILL_H : 0,
+                    titleSize, titleLineH, overlineH, lines);
+        } finally {
+            g.dispose();
+        }
+    }
+
     byte[] render(SocialProductDto product, BufferedImage photo) throws IOException {
-        BufferedImage canvas = new BufferedImage(CANVAS, CANVAS, BufferedImage.TYPE_INT_RGB);
+        Layout layout = computeLayout(product);
+
+        BufferedImage canvas = new BufferedImage(CANVAS_W, CANVAS_H, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = canvas.createGraphics();
 
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
-        g.setColor(PAGE_BG);
-        g.fillRect(0, 0, CANVAS, CANVAS);
+            g.setColor(PAGE_BG);
+            g.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-        drawShadow(g);
+            drawDecoration(g);
+            drawCard(g, layout);
 
-        g.setColor(CARD_BG);
-        g.fill(new RoundRectangle2D.Double(CARD_X, CARD_Y, CARD_W, CARD_H, CARD_R, CARD_R));
+            if (photo != null) {
+                drawContained(g, photo, layout.photoX(), layout.photoY(), layout.photoW(), layout.photoH());
+            }
 
-        g.setColor(SURFACE_LIGHT);
-        g.fill(new RoundRectangle2D.Double(IMAGE_X, IMAGE_Y, IMAGE_W, IMAGE_H, IMAGE_R, IMAGE_R));
-
-        if (photo != null) {
-            drawContained(g, photo, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
+            drawHeader(g, product, layout);
+            drawPrice(g, product, layout);
+        } finally {
+            g.dispose();
         }
-
-        drawFavoriteButton(g);
-        drawTitle(g, product.title());
-        drawBrand(g, product.brand());
-        drawPrice(g, product.price());
-        drawCartButton(g);
-
-        g.dispose();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(canvas, "png", baos);
         return baos.toByteArray();
+    }
+
+    private static void drawDecoration(Graphics2D g) {
+        g.setColor(MINT);
+        g.fill(new Ellipse2D.Double(DECOR_CX - DECOR_R, DECOR_CY - DECOR_R,
+                DECOR_R * 2.0, DECOR_R * 2.0));
+    }
+
+    private static void drawCard(Graphics2D g, Layout layout) {
+        drawSoftShadow(g, layout.cardX(), layout.cardY(), layout.cardW(), layout.cardH(),
+                CARD_R, 12, 1, 10, 0.12);
+        g.setColor(SURFACE);
+        g.fill(new RoundRectangle2D.Double(layout.cardX(), layout.cardY(),
+                layout.cardW(), layout.cardH(), CARD_R, CARD_R));
+    }
+
+    private static void drawSoftShadow(Graphics2D g, double x, double y, double w, double h,
+            double radius, int layers, double growStep, double offsetY, double targetAlpha) {
+
+        Composite original = g.getComposite();
+        double perLayer = 1.0 - Math.pow(1.0 - targetAlpha, 1.0 / layers);
+        float alpha = (float) perLayer;
+
+        g.setColor(SHADOW);
+        for (int i = layers; i >= 1; i--) {
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+            double grow = i * growStep;
+            g.fill(new RoundRectangle2D.Double(x - grow, y - grow + offsetY,
+                    w + 2 * grow, h + 2 * grow, radius + grow, radius + grow));
+        }
+        g.setComposite(original);
+    }
+
+    private void drawHeader(Graphics2D g, SocialProductDto product, Layout layout) {
+        g.setColor(FOREST);
+        g.fill(new RoundRectangle2D.Double(CONTENT_X, HEADER_TOP, RULE_W, RULE_H, RULE_H, RULE_H));
+
+        int y = HEADER_TOP + RULE_H + HEADER_GAP;
+
+        g.setFont(font(INTER_REGULAR, Font.PLAIN, OVERLINE_SIZE));
+        FontMetrics overlineMetrics = g.getFontMetrics();
+        String overline = truncateTracked(overline(product), overlineMetrics, CONTENT_W, OVERLINE_TRACK);
+        g.setColor(FOREST);
+        drawTracked(g, overline, CONTENT_X, y + overlineMetrics.getAscent(), OVERLINE_TRACK);
+
+        y += layout.overlineH() + HEADER_GAP;
+
+        g.setFont(font(DISPLAY_REGULAR, Font.PLAIN, layout.titleSize()));
+        FontMetrics titleMetrics = g.getFontMetrics();
+        g.setColor(TEXT_PRIMARY);
+
+        List<String> lines = layout.titleLines();
+        for (int i = 0; i < lines.size(); i++) {
+            int lineTop = y + i * layout.titleLineH();
+            g.drawString(lines.get(i), CONTENT_X, baseline(titleMetrics, lineTop, layout.titleLineH()));
+        }
+    }
+
+    private void drawPrice(Graphics2D g, SocialProductDto product, Layout layout) {
+        if (product.price() == null || layout.pillH() == 0) {
+            return;
+        }
+
+        drawSoftShadow(g, layout.pillX(), layout.pillY(), layout.pillW(), layout.pillH(),
+                layout.pillH() / 2.0, 6, 1, 4, 0.10);
+
+        g.setColor(FOREST);
+        g.fill(new RoundRectangle2D.Double(layout.pillX(), layout.pillY(),
+                layout.pillW(), layout.pillH(), layout.pillH(), layout.pillH()));
+
+        Font font = font(INTER_EXTRABOLD, Font.BOLD, PRICE_SIZE);
+        g.setFont(font);
+        FontMetrics metrics = g.getFontMetrics();
+
+        String text = String.format(Locale.of("pt", "BR"), "R$ %.2f", product.price());
+        int textWidth = trackedWidth(text, metrics, PRICE_TRACK);
+        int x = layout.pillX() + (layout.pillW() - textWidth) / 2;
+        int blockTop = layout.pillY();
+
+        g.setColor(WHITE);
+        drawTracked(g, text, x, baseline(metrics, blockTop, layout.pillH()), PRICE_TRACK);
     }
 
     private static void drawContained(Graphics2D g, BufferedImage image, int boxX, int boxY, int boxW, int boxH) {
@@ -208,145 +352,110 @@ public class SocialImageService {
         g.drawImage(image, x, y, width, height, null);
     }
 
-    private static void drawShadow(Graphics2D g) {
-        Composite original = g.getComposite();
-        for (int i = 14; i >= 1; i--) {
-            float alpha = 0.010f + 0.014f * (14 - i) / 14f;
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-            int grow = i * 2;
-            g.fill(new RoundRectangle2D.Double(CARD_X - grow, CARD_Y - grow + i,
-                    CARD_W + 2 * grow, CARD_H + 2 * grow, CARD_R + grow, CARD_R + grow));
-        }
-        g.setComposite(original);
-    }
-
-    private static void drawFavoriteButton(Graphics2D g) {
-        g.setColor(CARD_BG);
-        g.fill(new RoundRectangle2D.Double(FAVORITE_X, FAVORITE_Y, FAVORITE_SIZE, FAVORITE_SIZE,
-                FAVORITE_SIZE, FAVORITE_SIZE));
-
-        g.setColor(new Color(255, 255, 255, 204));
-        g.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.draw(new RoundRectangle2D.Double(FAVORITE_X + 2.5, FAVORITE_Y + 2.5,
-                FAVORITE_SIZE - 5, FAVORITE_SIZE - 5, FAVORITE_SIZE, FAVORITE_SIZE));
-
-        int iconSize = 36;
-        int iconX = FAVORITE_X + (FAVORITE_SIZE - iconSize) / 2;
-        int iconY = FAVORITE_Y + (FAVORITE_SIZE - iconSize) / 2;
-        drawHeart(g, iconX, iconY, iconSize, WHITE, 3f);
-    }
-
-    private static void drawHeart(Graphics2D g, int x, int y, int size, Color color, float stroke) {
-        Path2D.Float path = new Path2D.Float();
-        path.moveTo(px(x, size, 0.50), py(y, size, 0.92));
-        path.curveTo(px(x, size, 0.22), py(y, size, 0.72),
-                px(x, size, 0.04), py(y, size, 0.53),
-                px(x, size, 0.04), py(y, size, 0.33));
-        path.curveTo(px(x, size, 0.04), py(y, size, 0.16),
-                px(x, size, 0.17), py(y, size, 0.06),
-                px(x, size, 0.30), py(y, size, 0.06));
-        path.curveTo(px(x, size, 0.40), py(y, size, 0.06),
-                px(x, size, 0.47), py(y, size, 0.12),
-                px(x, size, 0.50), py(y, size, 0.20));
-        path.curveTo(px(x, size, 0.53), py(y, size, 0.12),
-                px(x, size, 0.60), py(y, size, 0.06),
-                px(x, size, 0.70), py(y, size, 0.06));
-        path.curveTo(px(x, size, 0.83), py(y, size, 0.06),
-                px(x, size, 0.96), py(y, size, 0.16),
-                px(x, size, 0.96), py(y, size, 0.33));
-        path.curveTo(px(x, size, 0.96), py(y, size, 0.53),
-                px(x, size, 0.78), py(y, size, 0.72),
-                px(x, size, 0.50), py(y, size, 0.92));
-        path.closePath();
-
-        Stroke original = g.getStroke();
-        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.setColor(color);
-        g.draw(path);
-        g.setStroke(original);
-    }
-
-    private static void drawCartButton(Graphics2D g) {
-        g.setColor(WHITE);
-        g.fill(new RoundRectangle2D.Double(CART_X, CART_Y, CART_SIZE, CART_SIZE, CART_RADIUS, CART_RADIUS));
-
-        int iconSize = 64;
-        int iconX = CART_X + (CART_SIZE - iconSize) / 2;
-        int iconY = CART_Y + (CART_SIZE - iconSize) / 2;
-        drawBag(g, iconX, iconY, iconSize, CARD_BG, 4.5f);
-    }
-
-    private static void drawBag(Graphics2D g, int x, int y, int size, Color color, float stroke) {
-        Stroke original = g.getStroke();
-        g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g.setColor(color);
-
-        g.fill(new RoundRectangle2D.Double(px(x, size, 0.12), py(y, size, 0.40),
-                size * 0.76, size * 0.52, size * 0.14, size * 0.14));
-
-        g.draw(new Arc2D.Double(px(x, size, 0.33), py(y, size, 0.23),
-                size * 0.34, size * 0.34, 0, -180, Arc2D.OPEN));
-
-        g.setStroke(original);
-    }
-
-    private void drawTitle(Graphics2D g, String rawTitle) {
-        String title = rawTitle == null || rawTitle.isBlank() ? "Produto Natura" : rawTitle.trim();
-        Font font = font(INTER_BOLD, Font.BOLD, TITLE_SIZE);
-        g.setFont(font);
-        FontMetrics metrics = g.getFontMetrics();
-
-        g.setColor(TEXT_LIGHT);
-        g.drawString(truncateText(title, metrics, TEXT_MAX_W), TEXT_X, baseline(metrics, TITLE_Y, TITLE_BLOCK_H));
-    }
-
-    private void drawBrand(Graphics2D g, String rawBrand) {
-        String brand = rawBrand == null || rawBrand.isBlank() ? DEFAULT_BRAND : rawBrand.trim();
-        Font font = font(INTER_REGULAR, Font.PLAIN, BRAND_SIZE);
-        g.setFont(font);
-        FontMetrics metrics = g.getFontMetrics();
-
-        g.setColor(TEXT_MUTED);
-        g.drawString(truncateText(brand, metrics, TEXT_MAX_W), TEXT_X, baseline(metrics, BRAND_Y, BRAND_BLOCK_H));
-    }
-
-    private void drawPrice(Graphics2D g, Double price) {
-        if (price == null) {
-            return;
-        }
-
-        Font font = font(INTER_EXTRABOLD, Font.BOLD, PRICE_SIZE);
-        g.setFont(font);
-        FontMetrics metrics = g.getFontMetrics();
-
-        String text = String.format(Locale.of("pt", "BR"), "R$ %.2f", price);
-        int blockY = CART_Y + CART_SIZE - PRICE_BLOCK_H;
-
-        g.setColor(TEXT_LIGHT);
-        g.drawString(text, TEXT_X, baseline(metrics, blockY, PRICE_BLOCK_H));
-    }
-
     private static int baseline(FontMetrics metrics, int blockTop, int blockHeight) {
         int textHeight = metrics.getAscent() + metrics.getDescent();
         return blockTop + (blockHeight - textHeight) / 2 + metrics.getAscent();
     }
 
-    private static float px(int x, int size, double ratio) {
-        return (float) (x + size * ratio);
+    private static int trackedWidth(String text, FontMetrics metrics, int track) {
+        if (text.isEmpty()) {
+            return 0;
+        }
+        return metrics.stringWidth(text) + track * (text.length() - 1);
     }
 
-    private static float py(int y, int size, double ratio) {
-        return (float) (y + size * ratio);
+    private static void drawTracked(Graphics2D g, String text, int x, int baseline, int track) {
+        FontMetrics metrics = g.getFontMetrics();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            g.drawString(String.valueOf(c), x, baseline);
+            x += metrics.charWidth(c) + track;
+        }
     }
 
-    private String truncateText(String text, FontMetrics metrics, int maxWidth) {
-        if (metrics.stringWidth(text) <= maxWidth) {
+    private static String truncateTracked(String text, FontMetrics metrics, int maxWidth, int track) {
+        if (trackedWidth(text, metrics, track) <= maxWidth) {
             return text;
         }
-        while (metrics.stringWidth(text + "...") > maxWidth && text.length() > 0) {
+        while (!text.isEmpty() && trackedWidth(text + "...", metrics, track) > maxWidth) {
             text = text.substring(0, text.length() - 1);
         }
         return text + "...";
+    }
+
+    private static List<String> wrap(String text, FontMetrics metrics, int maxWidth) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+
+        for (String word : text.trim().split("\\s+")) {
+            if (word.isEmpty()) {
+                continue;
+            }
+            if (line.isEmpty()) {
+                if (metrics.stringWidth(word) > maxWidth) {
+                    hardBreak(word, metrics, maxWidth, lines);
+                    continue;
+                }
+                line.append(word);
+            } else if (metrics.stringWidth(line.toString() + " " + word) <= maxWidth) {
+                line.append(' ').append(word);
+            } else {
+                lines.add(line.toString());
+                line.setLength(0);
+                if (metrics.stringWidth(word) > maxWidth) {
+                    hardBreak(word, metrics, maxWidth, lines);
+                    continue;
+                }
+                line.append(word);
+            }
+        }
+
+        if (!line.isEmpty()) {
+            lines.add(line.toString());
+        }
+        if (lines.isEmpty()) {
+            lines.add(text.trim());
+        }
+        return lines;
+    }
+
+    private static void hardBreak(String word, FontMetrics metrics, int maxWidth, List<String> lines) {
+        String rest = word;
+        while (!rest.isEmpty() && metrics.stringWidth(rest) > maxWidth) {
+            int cut = 1;
+            while (cut < rest.length() && metrics.stringWidth(rest.substring(0, cut + 1)) <= maxWidth) {
+                cut++;
+            }
+            lines.add(rest.substring(0, cut));
+            rest = rest.substring(cut);
+        }
+        if (!rest.isEmpty()) {
+            lines.add(rest);
+        }
+    }
+
+    private static List<String> limitLines(List<String> lines, FontMetrics metrics, int maxWidth, int max) {
+        if (lines.size() <= max) {
+            return lines;
+        }
+        List<String> limited = new ArrayList<>(lines.subList(0, max));
+        String last = limited.get(max - 1);
+        while (!last.isEmpty() && metrics.stringWidth(last + "...") > maxWidth) {
+            last = last.substring(0, last.length() - 1);
+        }
+        limited.set(max - 1, last + "...");
+        return limited;
+    }
+
+    private static String title(SocialProductDto product) {
+        String title = product.title();
+        return title == null || title.isBlank() ? DEFAULT_TITLE : title.trim();
+    }
+
+    private static String overline(SocialProductDto product) {
+        String brand = product.brand();
+        String value = brand == null || brand.isBlank() ? DEFAULT_BRAND : brand.trim();
+        return value.toUpperCase(Locale.ROOT);
     }
 
     private BufferedImage download(String imageUrl) {
@@ -373,7 +482,7 @@ public class SocialImageService {
         if (embedded != null) {
             return embedded.deriveFont(size);
         }
-        return new Font(Font.SANS_SERIF, fallbackStyle, Math.round(size));
+        return new Font(Font.SERIF, fallbackStyle, Math.round(size));
     }
 
     private static Font loadFont(String path) {
@@ -469,6 +578,7 @@ public class SocialImageService {
 
     private static String cacheKey(SocialProductDto product) {
         String payload = String.join("\\u001f",
+                TEMPLATE_VERSION,
                 product.productId().toString(),
                 product.title() == null ? "" : product.title(),
                 product.price() == null ? "" : Double.toString(product.price()),

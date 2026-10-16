@@ -13,19 +13,32 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 
 import com.natura.post.domain.products.dtos.SocialImage.SocialProductDto;
+import com.natura.post.domain.products.SocialImageService.Layout;
 
 class SocialImageServiceTest {
 
     private static final int PRODUCT_WIDTH = 300;
     private static final int PRODUCT_HEIGHT = 900;
 
-    private static final int SURFACE_LIGHT = new Color(0xF2, 0xF2, 0xF2).getRGB();
-    private static final int PAGE_BG = new Color(0xEE, 0xEE, 0xEC).getRGB();
+    private static final int SURFACE = new Color(0xFA, 0xF8, 0xF3).getRGB();
+    private static final int PAGE_BG = new Color(0xF1, 0xEE, 0xE7).getRGB();
+    private static final int MINT = new Color(0xB7, 0xD9, 0xC1).getRGB();
+    private static final int FOREST = new Color(0x0F, 0x51, 0x32).getRGB();
 
     private final SocialImageService service = new SocialImageService(null, null, null);
 
     @Test
+    void deveGerarImagemVertical1080x1920() throws Exception {
+        BufferedImage rendered = ImageIO.read(new ByteArrayInputStream(
+                service.render(product(), tallProduct())));
+
+        assertEquals(1080, rendered.getWidth(), "largura do story deve ser 1080");
+        assertEquals(1920, rendered.getHeight(), "altura do story deve ser 1920 (vertical)");
+    }
+
+    @Test
     void devePreservarAProporcaoDaFotoDoProduto() throws Exception {
+        Layout layout = service.computeLayout(product());
         BufferedImage rendered = ImageIO.read(new ByteArrayInputStream(
                 service.render(product(), tallProduct())));
 
@@ -34,25 +47,26 @@ class SocialImageServiceTest {
         double sourceAspect = (double) PRODUCT_WIDTH / PRODUCT_HEIGHT;
 
         assertEquals(sourceAspect, renderedAspect, 0.02, "foto distorcida: proporcao original nao preservada");
-        assertTrue(product.width <= SocialImageService.PHOTO_W, "foto esticada horizontalmente dentro da caixa");
-        assertTrue(product.height <= SocialImageService.PHOTO_H, "foto esticada verticalmente dentro da caixa");
+        assertTrue(product.width <= layout.photoW(), "foto esticada horizontalmente dentro da caixa");
+        assertTrue(product.height <= layout.photoH(), "foto esticada verticalmente dentro da caixa");
     }
 
     @Test
     void deveCentralizarAFotoSemEsticarNaSuperficieClara() throws Exception {
+        Layout layout = service.computeLayout(product());
         BufferedImage rendered = ImageIO.read(new ByteArrayInputStream(
                 service.render(product(), tallProduct())));
 
         Box product = findColor(rendered, Color.RED.getRGB());
 
-        int boxX = SocialImageService.PHOTO_X;
-        int boxY = SocialImageService.PHOTO_Y;
-        int boxWidth = SocialImageService.PHOTO_W;
-        int boxHeight = SocialImageService.PHOTO_H;
+        int boxX = layout.photoX();
+        int boxY = layout.photoY();
+        int boxWidth = layout.photoW();
+        int boxHeight = layout.photoH();
 
-        assertEquals(SURFACE_LIGHT, rendered.getRGB(boxX + 8, boxY + boxHeight / 2),
+        assertEquals(SURFACE, rendered.getRGB(boxX + 8, boxY + boxHeight / 2),
                 "a lateral da caixa deveria manter a superficie clara (object-fit: contain)");
-        assertEquals(SURFACE_LIGHT, rendered.getRGB(boxX + boxWidth - 8, boxY + boxHeight / 2),
+        assertEquals(SURFACE, rendered.getRGB(boxX + boxWidth - 8, boxY + boxHeight / 2),
                 "a lateral da caixa deveria manter a superficie clara (object-fit: contain)");
         assertTrue(product.x > boxX && product.x + product.width < boxX + boxWidth,
                 "foto deveria ficar centralizada na caixa");
@@ -61,16 +75,30 @@ class SocialImageServiceTest {
     }
 
     @Test
-    void deveMontarOCardMesmoSemFoto() throws Exception {
+    void deveMontarOStoryMesmoSemFoto() throws Exception {
+        Layout layout = service.computeLayout(product());
         BufferedImage rendered = ImageIO.read(new ByteArrayInputStream(service.render(product(), null)));
 
-        assertEquals(PAGE_BG, rendered.getRGB(8, 8), "fundo da pagina off-white");
-        assertEquals(SURFACE_LIGHT, rendered.getRGB(170, 373), "superficie clara da imagem");
-        assertEquals(new Color(0x29, 0x29, 0x29).getRGB(), rendered.getRGB(540, 700), "card grafite");
+        assertEquals(PAGE_BG, rendered.getRGB(8, 8), "fundo off-white do CALM");
+        assertEquals(SURFACE, rendered.getRGB(layout.cardX() + 40, layout.cardY() + 40),
+                "card de superficie clara");
+        assertEquals(MINT, rendered.getRGB(1000, 60), "circulo decorativo mint no topo");
+        assertEquals(FOREST, rendered.getRGB(layout.pillX() + 60, layout.pillY() + layout.pillH() / 2),
+                "pill de preco verde forest");
+    }
+
+    @Test
+    void deveManterOsBlocosDentroDaAreaSeguraDoStory() {
+        Layout layout = service.computeLayout(product());
+
+        assertTrue(layout.cardY() > 240, "card comeca abaixo do cabecalho");
+        assertTrue(layout.cardY() + layout.cardH() < layout.pillY(), "card nao pode invadir a faixa de preco");
+        assertTrue(layout.pillY() + layout.pillH() <= 1690, "preco dentro da zona segura inferior");
+        assertTrue(layout.photoW() > 0 && layout.photoH() > 0, "caixa da foto precisa existir");
     }
 
     private static SocialProductDto product() {
-        return new SocialProductDto("Creme Hidratante Corporal", 189.90, "http://localhost/produto.png", null, null);
+        return new SocialProductDto("Creme Hidratante Corporal", 189.90, "http://localhost/produto.png", "Natura Ekos", null);
     }
 
     private static BufferedImage tallProduct() {

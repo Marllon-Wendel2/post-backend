@@ -208,6 +208,575 @@
           "y": 57
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "mA1fr",
+      "x": 2960,
+      "y": 0,
+      "name": "Story - Card Classico 1080x1920",
+      "clip": true,
+      "width": 1080,
+      "height": 1920,
+      "fill": "$bg-page",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "mA1cd",
+          "x": 70,
+          "y": 140,
+          "name": "Story Card",
+          "clip": true,
+          "width": 940,
+          "height": 1640,
+          "fill": "$surface-dark",
+          "cornerRadius": "$radius-card",
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000002E",
+            "offset": {
+              "x": 0,
+              "y": 24
+            },
+            "blur": 60
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "mA1im",
+              "x": 16,
+              "y": 16,
+              "name": "Product Image",
+              "clip": true,
+              "width": 908,
+              "height": 1240,
+              "fill": "$surface-light",
+              "cornerRadius": "$radius-image",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "mA1ph",
+                  "x": 40,
+                  "y": 80,
+                  "name": "Product Photo",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "generated.webp",
+                    "mode": "contain"
+                  },
+                  "width": 828,
+                  "height": 1080
+                },
+                {
+                  "type": "frame",
+                  "id": "mA1fv",
+                  "x": 800,
+                  "y": 24,
+                  "name": "Favorite Button",
+                  "width": 84,
+                  "height": 84,
+                  "fill": "$surface-dark",
+                  "cornerRadius": 999,
+                  "stroke": "#FFFFFFCC",
+                  "strokeWidth": 5,
+                  "strokeAlignment": "inner",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mA1ht",
+                      "x": 24,
+                      "y": 24,
+                      "name": "Heart",
+                      "width": 36,
+                      "height": 36,
+                      "icon": "heart",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mA1in",
+              "x": 16,
+              "y": 1272,
+              "name": "Product Info",
+              "width": 908,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                32,
+                40,
+                0,
+                40
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mA1ti",
+                  "name": "Product Title",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Creme Hidratante Corporal",
+                  "lineHeight": 1.15,
+                  "fontFamily": "$font-sans",
+                  "fontSize": 56,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "mA1br",
+                  "name": "Brand",
+                  "fill": "$text-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Natura Ekos",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 32
+                },
+                {
+                  "type": "frame",
+                  "id": "mA1ft",
+                  "name": "Footer",
+                  "width": "fill_container",
+                  "padding": [
+                    40,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mA1pr",
+                      "name": "Price",
+                      "fill": "$text-primary",
+                      "content": "R$ 189,90",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 84,
+                      "fontWeight": "800",
+                      "letterSpacing": -2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mA1ct",
+                      "name": "Cart Button",
+                      "width": 150,
+                      "height": 150,
+                      "fill": "$white",
+                      "cornerRadius": "$radius-button",
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "mA1bg",
+                          "x": 39,
+                          "y": 39,
+                          "name": "Bag",
+                          "width": 72,
+                          "height": 72,
+                          "icon": "shopping-bag",
+                          "library": "lucide",
+                          "fill": "$surface-dark"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mB2fr",
+      "x": 4140,
+      "y": 0,
+      "name": "Story - Foto + Painel 1080x1920",
+      "clip": true,
+      "width": 1080,
+      "height": 1920,
+      "fill": "$bg-page",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "mB2im",
+          "x": 60,
+          "y": 110,
+          "name": "Product Image",
+          "clip": true,
+          "width": 960,
+          "height": 1060,
+          "fill": "$surface-light",
+          "cornerRadius": "$radius-image",
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "mB2ph",
+              "x": 60,
+              "y": 60,
+              "name": "Product Photo",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "generated.webp",
+                "mode": "contain"
+              },
+              "width": 840,
+              "height": 940
+            },
+            {
+              "type": "frame",
+              "id": "mB2fv",
+              "x": 852,
+              "y": 24,
+              "name": "Favorite Button",
+              "width": 84,
+              "height": 84,
+              "fill": "$surface-dark",
+              "cornerRadius": 999,
+              "stroke": "#FFFFFFCC",
+              "strokeWidth": 5,
+              "strokeAlignment": "inner",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "mB2ht",
+                  "x": 24,
+                  "y": 24,
+                  "name": "Heart",
+                  "width": 36,
+                  "height": 36,
+                  "icon": "heart",
+                  "library": "lucide",
+                  "fill": "#FFFFFF"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mB2pn",
+          "x": 60,
+          "y": 1130,
+          "name": "Info Panel",
+          "fill": "$surface-dark",
+          "cornerRadius": "$radius-card",
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#0000002E",
+            "offset": {
+              "x": 0,
+              "y": 24
+            },
+            "blur": 60
+          },
+          "clip": true,
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            56,
+            56,
+            56,
+            56
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "mB2br",
+              "name": "Brand",
+              "fill": "$text-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Natura Ekos",
+              "fontFamily": "$font-sans",
+              "fontSize": 32
+            },
+            {
+              "type": "text",
+              "id": "mB2ti",
+              "name": "Product Title",
+              "fill": "$text-primary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Creme Hidratante Corporal",
+              "lineHeight": 1.15,
+              "fontFamily": "$font-sans",
+              "fontSize": 56,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "mB2rw",
+              "name": "Price Row",
+              "width": "fill_container",
+              "padding": [
+                24,
+                0,
+                0,
+                0
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "mB2pr",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "R$ 189,90",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 88,
+                  "fontWeight": "800",
+                  "letterSpacing": -2
+                },
+                {
+                  "type": "frame",
+                  "id": "mB2ct",
+                  "name": "Cart Button",
+                  "width": 150,
+                  "height": 150,
+                  "fill": "$white",
+                  "cornerRadius": "$radius-button",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mB2bg",
+                      "x": 39,
+                      "y": 39,
+                      "name": "Bag",
+                      "width": 72,
+                      "height": 72,
+                      "icon": "shopping-bag",
+                      "library": "lucide",
+                      "fill": "$surface-dark"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mB2ct2",
+          "x": 290,
+          "y": 1690,
+          "name": "CTA Button",
+          "width": 500,
+          "height": 120,
+          "fill": "$surface-dark",
+          "cornerRadius": 999,
+          "layout": "horizontal",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "mB2ctt",
+              "name": "CTA Label",
+              "fill": "$text-primary",
+              "content": "Compre agora",
+              "fontFamily": "$font-sans",
+              "fontSize": 44,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mC3fr",
+      "x": 5320,
+      "y": 0,
+      "name": "Story - Preco Destaque 1080x1920",
+      "clip": true,
+      "width": 1080,
+      "height": 1920,
+      "fill": "$calm-bg",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "mC3dc",
+          "x": 860,
+          "y": -160,
+          "name": "Decoration",
+          "width": 380,
+          "height": 380,
+          "fill": "$calm-mint",
+          "cornerRadius": 999,
+          "layout": "none"
+        },
+        {
+          "type": "frame",
+          "id": "mC3wr",
+          "x": 0,
+          "y": 0,
+          "name": "Content",
+          "width": 1080,
+          "height": 1920,
+          "layout": "vertical",
+          "justifyContent": "space_between",
+          "padding": [
+            240,
+            80,
+            230,
+            80
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "mC3hd",
+              "name": "Header",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "mC3ln",
+                  "name": "Rule",
+                  "width": 96,
+                  "height": 4,
+                  "cornerRadius": 2,
+                  "fill": "$calm-forest"
+                },
+                {
+                  "type": "text",
+                  "id": "mC3ov",
+                  "name": "Brand Overline",
+                  "fill": "$calm-forest",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "NATURA EKOS",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 28,
+                  "fontWeight": "500",
+                  "letterSpacing": 7
+                },
+                {
+                  "type": "text",
+                  "id": "mC3ti",
+                  "name": "Product Title",
+                  "fill": "$calm-text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Creme Hidratante Corporal",
+                  "fontFamily": "$font-display",
+                  "fontSize": 124,
+                  "fontWeight": "400",
+                  "lineHeight": 1.08
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mC3im",
+              "name": "Product Image",
+              "width": "fill_container",
+              "height": 820,
+              "fill": "$calm-surface",
+              "cornerRadius": "$radius-xl",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#3330271F",
+                "offset": {
+                  "x": 0,
+                  "y": 10
+                },
+                "blur": 22
+              },
+              "clip": true,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "mC3ph",
+                  "x": 60,
+                  "y": 55,
+                  "name": "Product Photo",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "generated.webp",
+                    "mode": "contain"
+                  },
+                  "width": 800,
+                  "height": 710
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mC3rw",
+              "name": "Price Row",
+              "width": "fill_container",
+              "layout": "horizontal",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mC3pl",
+                  "name": "Price Badge",
+                  "width": 640,
+                  "height": 170,
+                  "fill": "$calm-forest",
+                  "cornerRadius": "$radius-pill",
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#3330271A",
+                    "offset": {
+                      "x": 0,
+                      "y": 4
+                    },
+                    "blur": 8
+                  },
+                  "layout": "horizontal",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mC3pr",
+                      "name": "Price",
+                      "fill": "$white",
+                      "content": "R$ 189,90",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 76,
+                      "fontWeight": "800",
+                      "letterSpacing": -1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {
@@ -254,6 +823,54 @@
     "font-sans": {
       "type": "string",
       "value": "Inter"
+    },
+    "calm-forest": {
+      "type": "color",
+      "value": "#0F5132"
+    },
+    "calm-mint": {
+      "type": "color",
+      "value": "#B7D9C1"
+    },
+    "calm-ivory": {
+      "type": "color",
+      "value": "#FAF9F4"
+    },
+    "calm-stone": {
+      "type": "color",
+      "value": "#D6D3C8"
+    },
+    "calm-bg": {
+      "type": "color",
+      "value": "#F1EEE7"
+    },
+    "calm-surface": {
+      "type": "color",
+      "value": "#FAF8F3"
+    },
+    "calm-text": {
+      "type": "color",
+      "value": "#242B27"
+    },
+    "calm-text-secondary": {
+      "type": "color",
+      "value": "#898983"
+    },
+    "calm-border": {
+      "type": "color",
+      "value": "#E7E3DA"
+    },
+    "font-display": {
+      "type": "string",
+      "value": "Cormorant Garamond"
+    },
+    "radius-xl": {
+      "type": "number",
+      "value": 24
+    },
+    "radius-pill": {
+      "type": "number",
+      "value": 9999
     }
   },
   "fileToken": "546c9bbb-f4d5-484a-987e-937db7778e34"
